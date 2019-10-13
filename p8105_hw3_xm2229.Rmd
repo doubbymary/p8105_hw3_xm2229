@@ -28,7 +28,7 @@ The goal is to do some exploration of this dataset. To that end, write a short d
 skimr::skim(instacart)
 ```
 
-**The dataset is derived from the original "instacart" data. The dataset has `r nrow(instacart)` rows and `r ncol(instacart)` columns. The structure of the data is `r class(instacart)`. Variables include `r names(instacart)`. Key variables descriptions can be find on** http://p8105.com/dataset_instacart.html:
+__The dataset is derived from the original "instacart" data. The dataset has `r nrow(instacart)` rows and `r ncol(instacart)` columns. The structure of the data is `r class(instacart)`. Variables include `r names(instacart)`. Key variables descriptions can be find on__ http://p8105.com/dataset_instacart.html:
 
 * order_id: order identifier
 * product_id: product identifier
@@ -162,9 +162,81 @@ brfss %>%
 brfss %>%
   filter(locationabbr == "NY", year %in% c(2006, 2010)) %>%
   ggplot(aes(x = data_value, fill = response)) + 
-  geom_density(alpha = .4, adjust = .5, color = "blue") + 
+  geom_density(alpha = .4, adjust = .5, color = "blue") +
+  labs(
+    title = "Density distribution of data_value for year 2006 and 2010",
+    x = "data_value",
+    y = "density"
+  )+
   facet_grid(~year)
 
 ```
 
 # Problem 3
+
+load in the dataset
+```{r}
+accel <- read.csv('./data/accel_data.csv')
+```
+
+- Load, tidy, and otherwise wrangle the data. Your final dataset should include all originally observed variables and values; have useful variable names; include a weekday vs weekend variable; and encode data with reasonable variable classes. Describe the resulting dataset (e.g. what variables exist, how many observations, etc).
+
+```{r}
+accel_cleaned = accel %>% 
+  janitor::clean_names() %>%
+  mutate(weekdays = ifelse(day %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"), "weekday", "weekend")) %>%
+  mutate(weekdays = forcats::fct_relevel(weekdays, c("weekday", "weekend")))
+```
+
+__The dataset is derived from the heart activity collected from an accelerometer of a patient in weeks. The dataset has `r nrow(accel_cleaned)` rows and `r ncol(accel_cleaned)` columns. The structure of the data is `r class(accel_cleaned)`. Key variables are: __
+
+* week: number of week since the data collection begins
+* day_id: day identifier
+* day: day of the week when the data is collected
+* weekdays: 1 if it is a weekday, 0 otherwise.
+* activity_* : are the activity counts for each minute of a 24-hour day starting at midnight
+
+
+- Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?
+
+```{r}
+accel_cleaned %>%
+  pivot_longer(
+    activity_1:activity_1440,
+    names_to = "activity",
+    values_to = "activity_sum"
+  ) %>%
+  group_by(day_id) %>%
+  summarise(
+    day_activity = sum(activity_sum)
+    ) %>%
+  knitr::kable()
+```
+
+__There is no apparent trend__
+
+- Accelerometer data allows the inspection activity over the course of the day. Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.
+
+
+```{r}
+accel_cleaned %>%
+  pivot_longer(
+    activity_1:activity_1440,
+    names_to = "activity",
+    values_to = "activity_sum"
+  ) %>%
+  group_by(day_id, day) %>%
+  summarise(
+    day_activity = sum(activity_sum)
+    ) %>%
+  ggplot(aes(x = day_id, y=day_activity, color=day)) + 
+  geom_point() + 
+  geom_line() + 
+  labs(
+    title = "24-hour activity for each day",
+    x = "day",
+    y = "24-hour activity"
+  )
+```
+
+__According to the plot, it seems to be a peak activity in the first three weeks and a drop in the fourth and fifth week following a rise in the end.__
