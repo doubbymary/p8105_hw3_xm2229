@@ -1,0 +1,49 @@
+---
+title: "p8105_hw3_xm2229"
+author: "Xiaoyue Ma"
+date: "10/13/2019"
+output:
+    html_document:
+      keep_md: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Problem 1
+
+load the data set from the library
+```{r}
+library(p8105.datasets)
+data("instacart")
+```
+
+The goal is to do some exploration of this dataset. To that end, write a short description of the dataset, noting the size and structure of the data, describing some key variables, and giving illstrative examples of observations. Then, do or answer the following (commenting on the results of each):
+
+ - How many aisles are there, and which aisles are the most items ordered from?
+ - Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.
+ - Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
+ - Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
+
+
+```{r}
+skimr::skim(instacart)
+```
+
+__This dataset is the online grocery shopping data provided by Instacart. The dataset contains `r nrow(instacart)` rows and `r ncol(instacart)` columns. The related variables are: `r names(instacart)`. Here are some exmaples of some observations in from the dataset:__
+```{r}
+head(instacart, 5)
+```
+
+__There are `r length(unique(instacart$aisle_id))` aisles and aisle #`r which.max(table(instacart$aisle_id))`, which is the `r unique(instacart[which(instacart$aisle_id == which.max(table(instacart$aisle_id))), ]$aisle)` aisle.__
+
+```{r}
+library(ggplot2)
+
+
+ggplot(instacart, aes(x = aisle)) + 
+  geom_bar(aes(y=..count..), stat = "count", position = "dodge")
+```
+
+
